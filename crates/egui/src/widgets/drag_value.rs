@@ -383,6 +383,7 @@ impl<'a> Widget for DragValue<'a> {
             if mem.gained_focus(id) {
                 mem.drag_value.edit_string = None;
             }
+
             is_kb_editing
         });
 
@@ -440,7 +441,10 @@ impl<'a> Widget for DragValue<'a> {
         }
 
         value = clamp_to_range(value, clamp_range.clone());
-        if old_value != value {
+
+        let old_rounded = emath::round_to_decimals(old_value, auto_decimals);
+        let new_rounded = emath::round_to_decimals(value, auto_decimals);
+        if old_rounded != new_rounded {
             set(&mut get_set_value, value);
             ui.memory_mut(|mem| mem.drag_value.edit_string = None);
         }
@@ -464,6 +468,7 @@ impl<'a> Widget for DragValue<'a> {
             let mut value_text = ui
                 .memory_mut(|mem| mem.drag_value.edit_string.take())
                 .unwrap_or_else(|| value_text.clone());
+
             let response = ui.add(
                 TextEdit::singleline(&mut value_text)
                     .clip_text(false)
@@ -475,6 +480,7 @@ impl<'a> Widget for DragValue<'a> {
                     .desired_width(ui.spacing().interact_size.x)
                     .font(text_style),
             );
+
             // Only update the value when the user presses enter, or clicks elsewhere. NOT every frame.
             // See https://github.com/emilk/egui/issues/2687
             if response.lost_focus() {
@@ -487,6 +493,7 @@ impl<'a> Widget for DragValue<'a> {
                     set(&mut get_set_value, parsed_value);
                 }
             }
+
             ui.memory_mut(|mem| mem.drag_value.edit_string = Some(value_text));
             response
         } else {
